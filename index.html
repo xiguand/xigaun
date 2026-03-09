@@ -105,14 +105,49 @@
 
     .px { width: var(--size); height: var(--size); }
 
+    .pixel-shell {
+      position: relative;
+      width: calc(20 * var(--size));
+      height: calc(20 * var(--size));
+    }
+
     .icon-wrap:hover .pixel {
       animation: floaty .7s steps(2, end) infinite alternate;
       filter: drop-shadow(0 0 8px #58c6ff80);
     }
 
+    .rain-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .rain-drop {
+      position: absolute;
+      top: -8%;
+      left: calc(var(--x) * 1%);
+      width: calc(var(--size) * 1);
+      height: calc(var(--size) * 3);
+      background: linear-gradient(180deg, #c7ecff, #5da7ff);
+      opacity: 0;
+      image-rendering: pixelated;
+    }
+
+    .rain-icon:hover .rain-drop {
+      opacity: 1;
+      animation: terraria-rain var(--dur, .55s) steps(3, end) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
     @keyframes floaty {
       from { transform: translateY(0) scale(1); }
       to { transform: translateY(-5px) scale(1.04); }
+    }
+
+    @keyframes terraria-rain {
+      0% { transform: translateY(-10px); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(110px); opacity: .2; }
     }
 
     .temp {
@@ -172,10 +207,10 @@
 
     const icons = {
       sunny: [
-        '00000000000000000000','000000000OY000000000','00000000OOOO000000000','0000000OYYYYO00000000',
-        '000000OYYYYYYO000000','00000OOYYYYYYOO00000','00000OYYYYYYYYO00000','0000OYYYYYYYYYYO0000',
-        '0000OYYYYYYYYYYO0000','00000OYYYYYYYYO00000','00000OOYYYYYYOO00000','000000OYYYYYYO000000',
-        '0000000OYYYYO00000000','00000000OOOO000000000','000000000OY000000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','000000000OOOO00000000','0000000OYYYYO0000000',
+        '000000OYYYYYYO000000','00000OYYYYYYYYO00000','00000YYYYYYYYYY000000','0000OYYYYYYYYYYO0000',
+        '0000OYYYYYYYYYYO0000','00000YYYYYYYYYY000000','00000OYYYYYYYYO00000','000000OYYYYYYO000000',
+        '0000000OYYYYO0000000','000000000OOOO00000000','00000000000000000000','00000000000000000000',
         '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       cloudy: [
@@ -237,7 +272,10 @@
       return 'transparent';
     }
 
-    function drawPixelIcon(lines) {
+    function drawPixelIcon(type) {
+      const lines = icons[type];
+      const shell = document.createElement('div');
+      shell.className = 'pixel-shell';
       const pixel = document.createElement('div');
       pixel.className = 'pixel';
       for (let y = 0; y < 20; y++) {
@@ -248,7 +286,33 @@
           pixel.appendChild(px);
         }
       }
-      return pixel;
+      shell.appendChild(pixel);
+
+      if (type === 'rain') {
+        const rainLayer = document.createElement('div');
+        rainLayer.className = 'rain-layer';
+        const drops = [
+          { x: 8, delay: '.00s', dur: '.56s' },
+          { x: 20, delay: '.11s', dur: '.52s' },
+          { x: 31, delay: '.23s', dur: '.60s' },
+          { x: 42, delay: '.05s', dur: '.49s' },
+          { x: 55, delay: '.18s', dur: '.58s' },
+          { x: 67, delay: '.08s', dur: '.54s' },
+          { x: 79, delay: '.20s', dur: '.62s' },
+          { x: 89, delay: '.15s', dur: '.50s' }
+        ];
+        drops.forEach(d => {
+          const drop = document.createElement('span');
+          drop.className = 'rain-drop';
+          drop.style.setProperty('--x', d.x);
+          drop.style.setProperty('--delay', d.delay);
+          drop.style.setProperty('--dur', d.dur);
+          rainLayer.appendChild(drop);
+        });
+        shell.appendChild(rainLayer);
+      }
+
+      return shell;
     }
 
     const board = document.getElementById('board');
@@ -263,7 +327,8 @@
 
       const wrap = document.createElement('div');
       wrap.className = 'icon-wrap';
-      wrap.appendChild(drawPixelIcon(icons[item.icon]));
+      if (item.icon === 'rain') wrap.classList.add('rain-icon');
+      wrap.appendChild(drawPixelIcon(item.icon));
 
       const temp = document.createElement('div');
       temp.className = 'temp';
