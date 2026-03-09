@@ -1,59 +1,250 @@
 ﻿<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>俊超的网页</title>
-    <style>
-      body {
-        background: #f5f7fb;
-        font-family: "Microsoft YaHei", sans-serif;
-        margin: 0;
-        padding: 40px;
-      }
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>七天天气像素画</title>
+  <style>
+    :root {
+      --bg1: #c7ecff;
+      --bg2: #f7fbff;
+      --card: #ffffff;
+      --ink: #1e2d3d;
+      --muted: #4b6278;
+      --line: #d7e4ef;
+      --sun: #f9bf3b;
+      --cloud: #d7dde5;
+      --rain: #5ba4ff;
+      --storm: #7c6eff;
+      --snow: #9bdff3;
+      --night: #5e79d7;
+    }
 
-      .card {
-        background: white;
-        max-width: 520px;
-        margin: 0 auto;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      }
+    * { box-sizing: border-box; }
 
-      h1 {
-        color: #1f3a8a;
-        margin-top: 0;
-      }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(70% 60% at 10% 10%, #e9f8ff 0%, transparent 70%),
+        radial-gradient(60% 50% at 90% 80%, #dceeff 0%, transparent 65%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      padding: 30px 18px 70px;
+    }
 
-      p {
-        color: #333;
-        line-height: 1.8;
-      }
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
 
-      a {
-        color: #2563eb;
-        text-decoration: none;
-      }
+    .sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 22px;
+      font-size: 14px;
+    }
 
-      a:hover {
-        color: #1d4ed8;
-        text-decoration: underline;
-      }
+    .board {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 14px;
+    }
 
-      img {
-        width: 100%;
-        border-radius: 10px;
-        margin-top: 12px;
+    .day-card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 8px 10px;
+      text-align: center;
+      box-shadow: 0 8px 22px rgba(41, 89, 139, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .day-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 26px rgba(41, 89, 139, 0.18);
+    }
+
+    .weekday {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .icon-wrap {
+      height: 120px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .pixel {
+      --size: 6px;
+      display: grid;
+      grid-template-columns: repeat(16, var(--size));
+      grid-template-rows: repeat(16, var(--size));
+      width: calc(16 * var(--size));
+      height: calc(16 * var(--size));
+      image-rendering: pixelated;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .px { width: var(--size); height: var(--size); background: transparent; }
+
+    .icon-wrap:hover .pixel {
+      animation: pixel-bob 0.75s steps(2, end) infinite alternate;
+      filter: drop-shadow(0 0 7px rgba(56, 130, 255, 0.5));
+    }
+
+    @keyframes pixel-bob {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-5px) scale(1.04); }
+    }
+
+    .temp { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    .desc { font-size: 13px; font-weight: 600; }
+
+    .signature {
+      position: fixed;
+      left: 16px;
+      bottom: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #17395f;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid #c7dff4;
+      border-radius: 8px;
+      padding: 6px 10px;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+  <h1>近七天天气像素画</h1>
+  <div class="sub">鼠标悬浮在图标上，会出现像素动态效果</div>
+
+  <section class="board" id="board"></section>
+
+  <div class="signature">管俊超</div>
+
+  <script>
+    const C = {
+      sun: '#f9bf3b',
+      cloud: '#d7dde5',
+      rain: '#5ba4ff',
+      storm: '#7c6eff',
+      snow: '#9bdff3',
+      moon: '#5e79d7',
+      dark: '#304154',
+      white: '#ffffff'
+    };
+
+    const icons = {
+      sunny: [
+        '0000000000000000','0000000SS0000000','000000SSSS000000','00000SSSSSS00000',
+        '0000SSSSSSSS0000','0000SSSSSSSS0000','0000SSSSSSSS0000','00SSSSSSSSSSSS00',
+        '00SSSSSSSSSSSS00','0000SSSSSSSS0000','0000SSSSSSSS0000','0000SSSSSSSS0000',
+        '00000SSSSSS00000','000000SSSS000000','0000000SS0000000','0000000000000000'
+      ],
+      cloudy: [
+        '0000000000000000','0000000000000000','0000000000000000','000000CCC0000000',
+        '00000CCCCC000000','0000CCCCCCC00000','000CCCCCCCCCC0000','00CCCCCCCCCCCC000',
+        '00CCCCCCCCCCCC000','000CCCCCCCCCC0000','0000CCCCCCC00000','00000CCCCC000000',
+        '000000CCC0000000','0000000000000000','0000000000000000','0000000000000000'
+      ],
+      rain: [
+        '0000000000000000','000000CCC0000000','00000CCCCC000000','0000CCCCCCC00000',
+        '000CCCCCCCCCC0000','00CCCCCCCCCCCC000','00CCCCCCCCCCCC000','000CCCCCCCCCC0000',
+        '0000CCCCCCC00000','0000000R00R00000','000000R00R000000','00000R00R0000000',
+        '0000000R00R00000','000000R00R000000','00000R00R0000000','0000000000000000'
+      ],
+      storm: [
+        '0000000000000000','000000CCC0000000','00000CCCCC000000','0000CCCCCCC00000',
+        '000CCCCCCCCCC0000','00CCCCCCCCCCCC000','00CCCCCCCCCCCC000','000CCCCCCCCCC0000',
+        '0000CCCCCCC00000','0000000T00000000','000000TT00000000','00000TT000000000',
+        '000000TTT0000000','0000000TT0000000','000000TT00000000','0000000000000000'
+      ],
+      snow: [
+        '0000000000000000','0000000CCC000000','000000CCCCC00000','00000CCCCCCC0000',
+        '0000CCCCCCCCC000','000CCCCCCCCCCC000','00CCCCCCCCCCCCC00','00CCCCCCCCCCCCC00',
+        '000CCCCCCCCCCC000','0000CCCCCCCCC000','00000CCCCCCC0000','000000CCCCC00000',
+        '0000000S0S000000','000000S0S0S00000','0000000S0S000000','0000000000000000'
+      ],
+      night: [
+        '0000000000000000','0000000000M00000','000000000MMM0000','00000000MMMM0000',
+        '0000000MMMMM0000','0000000MMMM00000','0000000MMM000000','000000MMMM000000',
+        '00000CCCCC000000','0000CCCCCCC00000','000CCCCCCCCCC0000','00CCCCCCCCCCCC000',
+        '00CCCCCCCCCCCC000','000CCCCCCCCCC0000','0000CCCCCCC00000','0000000000000000'
+      ]
+    };
+
+    const weather = [
+      { day: '周一', icon: 'sunny', temp: '12°C / 21°C', desc: '晴' },
+      { day: '周二', icon: 'cloudy', temp: '11°C / 19°C', desc: '多云' },
+      { day: '周三', icon: 'rain', temp: '10°C / 17°C', desc: '小雨' },
+      { day: '周四', icon: 'storm', temp: '9°C / 16°C', desc: '雷阵雨' },
+      { day: '周五', icon: 'cloudy', temp: '11°C / 18°C', desc: '阴转多云' },
+      { day: '周六', icon: 'snow', temp: '3°C / 8°C', desc: '雨夹雪' },
+      { day: '周日', icon: 'night', temp: '8°C / 15°C', desc: '夜间多云' }
+    ];
+
+    function mapColor(ch) {
+      if (ch === 'S') return C.sun;
+      if (ch === 'C') return C.cloud;
+      if (ch === 'R') return C.rain;
+      if (ch === 'T') return C.storm;
+      if (ch === 'M') return C.moon;
+      return 'transparent';
+    }
+
+    function drawPixelIcon(lines) {
+      const pixel = document.createElement('div');
+      pixel.className = 'pixel';
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          const px = document.createElement('span');
+          px.className = 'px';
+          const ch = lines[y][x];
+          px.style.background = mapColor(ch);
+          pixel.appendChild(px);
+        }
       }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <h1>你好，管俊超</h1>
-      <p>我的网页成功了，而且现在更好看了！</p>
-      <a href="https://www.baidu.com" target="_blank">点我打开百度</a>
-      <p>这是一张图片：</p>
-      <img src="https://picsum.photos/520/300" alt="随机图片">
-    </div>
-  </body>
+      return pixel;
+    }
+
+    const board = document.getElementById('board');
+
+    weather.forEach(item => {
+      const card = document.createElement('article');
+      card.className = 'day-card';
+
+      const weekday = document.createElement('div');
+      weekday.className = 'weekday';
+      weekday.textContent = item.day;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'icon-wrap';
+      wrap.appendChild(drawPixelIcon(icons[item.icon]));
+
+      const temp = document.createElement('div');
+      temp.className = 'temp';
+      temp.textContent = item.temp;
+
+      const desc = document.createElement('div');
+      desc.className = 'desc';
+      desc.textContent = item.desc;
+
+      card.append(weekday, wrap, temp, desc);
+      board.appendChild(card);
+    });
+  </script>
+</body>
 </html>
