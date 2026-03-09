@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>七天天气像素画</title>
+  <title>近七天天气像素画</title>
   <style>
     :root {
-      --bg1: #c7ecff;
-      --bg2: #f7fbff;
-      --card: #ffffff;
-      --ink: #1e2d3d;
-      --muted: #4b6278;
-      --line: #d7e4ef;
-      --sun: #f9bf3b;
-      --cloud: #d7dde5;
-      --rain: #5ba4ff;
-      --storm: #7c6eff;
-      --snow: #9bdff3;
-      --night: #5e79d7;
+      --bg-a: #070b19;
+      --bg-b: #121a31;
+      --card: #111a2d;
+      --card-line: #2d3d66;
+      --text: #e7efff;
+      --muted: #9bb0d9;
+      --sun-core: #ffd857;
+      --sun-ring: #ff9f43;
+      --cloud-hi: #d7e3ff;
+      --cloud-mid: #9db3db;
+      --cloud-low: #7086b1;
+      --rain-a: #7ed0ff;
+      --rain-b: #4190ff;
+      --storm: #caa7ff;
+      --snow: #bff5ff;
+      --moon-a: #a4b7ff;
+      --moon-b: #6f86f6;
     }
 
     * { box-sizing: border-box; }
@@ -26,59 +31,60 @@
       margin: 0;
       min-height: 100vh;
       font-family: "Microsoft YaHei", sans-serif;
-      color: var(--ink);
+      color: var(--text);
       background:
-        radial-gradient(70% 60% at 10% 10%, #e9f8ff 0%, transparent 70%),
-        radial-gradient(60% 50% at 90% 80%, #dceeff 0%, transparent 65%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      padding: 30px 18px 70px;
+        radial-gradient(1000px 450px at 8% -10%, #2f4f9f33 0%, transparent 55%),
+        radial-gradient(800px 400px at 92% 110%, #0ea5e922 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-b), var(--bg-a));
+      padding: 30px 18px 120px;
     }
 
     h1 {
-      margin: 0 0 8px;
+      margin: 0;
       text-align: center;
-      font-size: 28px;
+      font-size: clamp(24px, 3.8vw, 38px);
       letter-spacing: 1px;
     }
 
     .sub {
+      margin: 10px 0 24px;
       text-align: center;
       color: var(--muted);
-      margin-bottom: 22px;
       font-size: 14px;
     }
 
     .board {
-      max-width: 1080px;
+      max-width: 1120px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 14px;
     }
 
     .day-card {
-      background: var(--card);
-      border: 2px solid var(--line);
-      border-radius: 12px;
+      background: linear-gradient(180deg, #18233d, var(--card));
+      border: 1px solid var(--card-line);
+      border-radius: 14px;
       padding: 12px 8px 10px;
       text-align: center;
-      box-shadow: 0 8px 22px rgba(41, 89, 139, 0.12);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 20px #0000004f;
+      transition: transform .18s ease, box-shadow .18s ease;
     }
 
     .day-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 26px rgba(41, 89, 139, 0.18);
+      box-shadow: 0 14px 26px #00000066;
     }
 
     .weekday {
-      font-weight: 700;
       font-size: 14px;
+      font-weight: 700;
+      color: #f0f6ff;
       margin-bottom: 8px;
     }
 
     .icon-wrap {
-      height: 120px;
+      height: 130px;
       display: grid;
       place-items: center;
       margin-bottom: 8px;
@@ -86,50 +92,63 @@
     }
 
     .pixel {
-      --size: 6px;
+      --size: 5px;
       display: grid;
-      grid-template-columns: repeat(16, var(--size));
-      grid-template-rows: repeat(16, var(--size));
-      width: calc(16 * var(--size));
-      height: calc(16 * var(--size));
+      grid-template-columns: repeat(20, var(--size));
+      grid-template-rows: repeat(20, var(--size));
+      width: calc(20 * var(--size));
+      height: calc(20 * var(--size));
       image-rendering: pixelated;
-      transition: transform 0.2s ease, filter 0.2s ease;
+      transform-origin: 50% 60%;
+      transition: filter .2s ease;
     }
 
-    .px { width: var(--size); height: var(--size); background: transparent; }
+    .px { width: var(--size); height: var(--size); }
 
     .icon-wrap:hover .pixel {
-      animation: pixel-bob 0.75s steps(2, end) infinite alternate;
-      filter: drop-shadow(0 0 7px rgba(56, 130, 255, 0.5));
+      animation: floaty .7s steps(2, end) infinite alternate;
+      filter: drop-shadow(0 0 8px #58c6ff80);
     }
 
-    @keyframes pixel-bob {
+    @keyframes floaty {
       from { transform: translateY(0) scale(1); }
       to { transform: translateY(-5px) scale(1.04); }
     }
 
-    .temp { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-    .desc { font-size: 13px; font-weight: 600; }
+    .temp {
+      font-size: 13px;
+      color: #b7c7e5;
+      margin-bottom: 4px;
+    }
+
+    .desc {
+      font-size: 13px;
+      font-weight: 700;
+      color: #dfe8ff;
+    }
 
     .signature {
       position: fixed;
-      left: 16px;
-      bottom: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #17395f;
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid #c7dff4;
-      border-radius: 8px;
-      padding: 6px 10px;
-      backdrop-filter: blur(4px);
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      font-size: clamp(28px, 6vw, 52px);
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #7dd3fc, #60a5fa, #a78bfa, #f0abfc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 8px 28px #4cc9ff55;
+      user-select: none;
+      pointer-events: none;
+      line-height: 1;
     }
   </style>
 </head>
 <body>
   <h1>近七天天气像素画</h1>
-  <div class="sub">鼠标悬浮在图标上，会出现像素动态效果</div>
+  <div class="sub">悬浮天气图标可见像素动态效果</div>
 
   <section class="board" id="board"></section>
 
@@ -137,83 +156,95 @@
 
   <script>
     const C = {
-      sun: '#f9bf3b',
-      cloud: '#d7dde5',
-      rain: '#5ba4ff',
-      storm: '#7c6eff',
-      snow: '#9bdff3',
-      moon: '#5e79d7',
-      dark: '#304154',
-      white: '#ffffff'
+      H: '#f4f8ff',
+      C: '#d7e3ff',
+      G: '#9db3db',
+      D: '#7086b1',
+      Y: '#ffd857',
+      O: '#ff9f43',
+      R: '#7ed0ff',
+      B: '#4190ff',
+      L: '#caa7ff',
+      W: '#bff5ff',
+      M: '#a4b7ff',
+      N: '#6f86f6'
     };
 
     const icons = {
       sunny: [
-        '0000000000000000','0000000SS0000000','000000SSSS000000','00000SSSSSS00000',
-        '0000SSSSSSSS0000','0000SSSSSSSS0000','0000SSSSSSSS0000','00SSSSSSSSSSSS00',
-        '00SSSSSSSSSSSS00','0000SSSSSSSS0000','0000SSSSSSSS0000','0000SSSSSSSS0000',
-        '00000SSSSSS00000','000000SSSS000000','0000000SS0000000','0000000000000000'
+        '00000000000000000000','000000000OY000000000','00000000OOOO000000000','0000000OYYYYO00000000',
+        '000000OYYYYYYO000000','00000OOYYYYYYOO00000','00000OYYYYYYYYO00000','0000OYYYYYYYYYYO0000',
+        '0000OYYYYYYYYYYO0000','00000OYYYYYYYYO00000','00000OOYYYYYYOO00000','000000OYYYYYYO000000',
+        '0000000OYYYYO00000000','00000000OOOO000000000','000000000OY000000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       cloudy: [
-        '0000000000000000','0000000000000000','0000000000000000','000000CCC0000000',
-        '00000CCCCC000000','0000CCCCCCC00000','000CCCCCCCCCC0000','00CCCCCCCCCCCC000',
-        '00CCCCCCCCCCCC000','000CCCCCCCCCC0000','0000CCCCCCC00000','00000CCCCC000000',
-        '000000CCC0000000','0000000000000000','0000000000000000','0000000000000000'
+        '00000000000000000000','00000000000000000000','00000000CCC000000000','0000000CCCCC00000000',
+        '000000CCCGCCC0000000','00000CCGGGGCCC000000','0000CCGGGGGGGCCC0000','000CCGGGGGGGGGGCC000',
+        '000CCGGGGGGGGGGCC000','0000CCGGGGGGGCCC0000','00000CCGGGGCCC000000','000000CCCGCCC0000000',
+        '0000000CCCCC00000000','00000000CCC000000000','00000000000000000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       rain: [
-        '0000000000000000','000000CCC0000000','00000CCCCC000000','0000CCCCCCC00000',
-        '000CCCCCCCCCC0000','00CCCCCCCCCCCC000','00CCCCCCCCCCCC000','000CCCCCCCCCC0000',
-        '0000CCCCCCC00000','0000000R00R00000','000000R00R000000','00000R00R0000000',
-        '0000000R00R00000','000000R00R000000','00000R00R0000000','0000000000000000'
+        '00000000000000000000','00000000CCC000000000','0000000CCCCC00000000','000000CCCGCCC0000000',
+        '00000CCGGGGCCC000000','0000CCGGGGGGGCCC0000','000CCGGGGGGGGGGCC000','000CCGGGGGGGGGGCC000',
+        '0000CCGGGGGGGCCC0000','00000CCGGGGCCC000000','000000CCCGCCC0000000','00000000CCC000000000',
+        '000000R00B00R0000000','0000000R0B0R00000000','000000R00B00R0000000','0000000R0B0R00000000',
+        '000000R00B00R0000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       storm: [
-        '0000000000000000','000000CCC0000000','00000CCCCC000000','0000CCCCCCC00000',
-        '000CCCCCCCCCC0000','00CCCCCCCCCCCC000','00CCCCCCCCCCCC000','000CCCCCCCCCC0000',
-        '0000CCCCCCC00000','0000000T00000000','000000TT00000000','00000TT000000000',
-        '000000TTT0000000','0000000TT0000000','000000TT00000000','0000000000000000'
+        '00000000000000000000','00000000CCC000000000','0000000CCCCC00000000','000000CCCGCCC0000000',
+        '00000CCGGGGCCC000000','0000CCGGGGGGGCCC0000','000CCGGGGGGGGGGCC000','000CCGGGGGGGGGGCC000',
+        '0000CCGGGGGGGCCC0000','00000CCGGGGCCC000000','000000CCCGCCC0000000','00000000CCC000000000',
+        '000000000L0000000000','00000000LL0000000000','0000000LL00000000000','00000000LLL000000000',
+        '000000000LL000000000','00000000LL0000000000','00000000000000000000','00000000000000000000'
       ],
       snow: [
-        '0000000000000000','0000000CCC000000','000000CCCCC00000','00000CCCCCCC0000',
-        '0000CCCCCCCCC000','000CCCCCCCCCCC000','00CCCCCCCCCCCCC00','00CCCCCCCCCCCCC00',
-        '000CCCCCCCCCCC000','0000CCCCCCCCC000','00000CCCCCCC0000','000000CCCCC00000',
-        '0000000S0S000000','000000S0S0S00000','0000000S0S000000','0000000000000000'
+        '00000000000000000000','00000000CCC000000000','0000000CCCCC00000000','000000CCCGCCC0000000',
+        '00000CCGGGGCCC000000','0000CCGGGGGGGCCC0000','000CCGGGGGGGGGGCC000','000CCGGGGGGGGGGCC000',
+        '0000CCGGGGGGGCCC0000','00000CCGGGGCCC000000','000000CCCGCCC0000000','00000000CCC000000000',
+        '000000W00W00W0000000','0000000WWW0000000000','000000W00W00W0000000','0000000WWW0000000000',
+        '000000W00W00W0000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       night: [
-        '0000000000000000','0000000000M00000','000000000MMM0000','00000000MMMM0000',
-        '0000000MMMMM0000','0000000MMMM00000','0000000MMM000000','000000MMMM000000',
-        '00000CCCCC000000','0000CCCCCCC00000','000CCCCCCCCCC0000','00CCCCCCCCCCCC000',
-        '00CCCCCCCCCCCC000','000CCCCCCCCCC0000','0000CCCCCCC00000','0000000000000000'
+        '00000000000000000000','0000000000MN00000000','000000000MNNN0000000','00000000MNNNN0000000',
+        '0000000MNNNNN0000000','0000000MNNNN00000000','0000000MNNN000000000','0000000MNN0000000000',
+        '00000000CCC000000000','0000000CCCCC00000000','000000CCCGCCC0000000','00000CCGGGGCCC000000',
+        '0000CCGGGGGGGCCC0000','000CCGGGGGGGGGGCC000','000CCGGGGGGGGGGCC000','0000CCGGGGGGGCCC0000',
+        '00000CCGGGGCCC000000','000000CCCGCCC0000000','0000000CCCCC00000000','00000000000000000000'
+      ],
+      suncloud: [
+        '00000000OOO000000000','0000000OYYYOO00000000','000000OYYYYYO0000000','0000000OYYYOO00000000',
+        '00000000OOO000000000','000000000000CCC00000','00000000000CCCCC0000','000000000CCCGCCC0000',
+        '00000000CCGGGGCCC000','0000000CCGGGGGGCC000','00000000CCGGGGCC0000','000000000CCCGCC00000',
+        '0000000000CCC0000000','00000000000000000000','00000000000000000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ]
     };
 
     const weather = [
-      { day: '周一', icon: 'sunny', temp: '12°C / 21°C', desc: '晴' },
+      { day: '周一', icon: 'suncloud', temp: '13°C / 22°C', desc: '晴间多云' },
       { day: '周二', icon: 'cloudy', temp: '11°C / 19°C', desc: '多云' },
       { day: '周三', icon: 'rain', temp: '10°C / 17°C', desc: '小雨' },
       { day: '周四', icon: 'storm', temp: '9°C / 16°C', desc: '雷阵雨' },
-      { day: '周五', icon: 'cloudy', temp: '11°C / 18°C', desc: '阴转多云' },
+      { day: '周五', icon: 'sunny', temp: '12°C / 21°C', desc: '晴' },
       { day: '周六', icon: 'snow', temp: '3°C / 8°C', desc: '雨夹雪' },
       { day: '周日', icon: 'night', temp: '8°C / 15°C', desc: '夜间多云' }
     ];
 
     function mapColor(ch) {
-      if (ch === 'S') return C.sun;
-      if (ch === 'C') return C.cloud;
-      if (ch === 'R') return C.rain;
-      if (ch === 'T') return C.storm;
-      if (ch === 'M') return C.moon;
+      if (C[ch]) return C[ch];
       return 'transparent';
     }
 
     function drawPixelIcon(lines) {
       const pixel = document.createElement('div');
       pixel.className = 'pixel';
-      for (let y = 0; y < 16; y++) {
-        for (let x = 0; x < 16; x++) {
+      for (let y = 0; y < 20; y++) {
+        for (let x = 0; x < 20; x++) {
           const px = document.createElement('span');
           px.className = 'px';
-          const ch = lines[y][x];
-          px.style.background = mapColor(ch);
+          px.style.background = mapColor(lines[y][x]);
           pixel.appendChild(px);
         }
       }
