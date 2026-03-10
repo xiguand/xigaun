@@ -14,20 +14,20 @@
       --muted: #9bb0d9;
       --sun-core: #ffd857;
       --sun-ring: #ff9f43;
-      --sun-glow: #ffba08; /* 新增太阳光晕色 */
+      --sun-glow: #ffba08;
       --cloud-hi: #d7e3ff;
       --cloud-mid: #9db3db;
       --cloud-low: #7086b1;
       --rain-a: #7ed0ff;
       --rain-b: #4190ff;
-      --rain-glow: #a8d8ff; /* 新增雨滴高光 */
+      --rain-glow: #a8d8ff;
       --storm: #caa7ff;
-      --storm-glow: #e0c3ff; /* 新增雷阵雨高光 */
+      --storm-glow: #e0c3ff;
       --snow: #bff5ff;
-      --snow-glow: #e6fdff; /* 新增雪花高光 */
+      --snow-glow: #e6fdff;
       --moon-a: #a4b7ff;
       --moon-b: #6f86f6;
-      --moon-glow: #c0cfff; /* 新增月亮光晕 */
+      --moon-glow: #c0cfff;
     }
 
     * { box-sizing: border-box; }
@@ -73,14 +73,12 @@
       padding: 12px 8px 10px;
       text-align: center;
       box-shadow: 0 8px 20px #0000004f;
-      /* 移除卡片的hover动画，避免背景动 */
       transition: none;
     }
 
-    /* 移除卡片hover效果，只保留视觉反馈 */
     .day-card:hover {
       box-shadow: 0 14px 26px #00000066;
-      transform: none; /* 禁止卡片整体移动 */
+      transform: none;
     }
 
     .weekday {
@@ -96,8 +94,9 @@
       place-items: center;
       margin-bottom: 8px;
       cursor: pointer;
-      /* 容器禁止动画 */
       transition: none;
+      /* 开启3D变换 */
+      perspective: 1000px;
     }
 
     .pixel {
@@ -108,21 +107,15 @@
       width: calc(20 * var(--size));
       height: calc(20 * var(--size));
       image-rendering: pixelated;
-      transform-origin: 50% 60%;
-      /* 仅像素画本身有hover动画 */
-      transition: filter .2s ease, transform .2s ease;
-    }
-
-    /* 仅像素画hover时动，背景不动 */
-    .icon-wrap:hover .pixel {
-      animation: floaty .7s steps(2, end) infinite alternate;
-      filter: drop-shadow(0 0 8px #58c6ff80);
+      transform-origin: 50% 50%;
+      transition: transform 0.15s ease-out, filter 0.2s ease;
+      /* 3D变换基础 */
+      transform-style: preserve-3d;
     }
 
     .px { 
       width: var(--size); 
       height: var(--size); 
-      /* 像素点增加过渡，更丝滑 */
       transition: background-color 0.2s ease;
     }
 
@@ -130,11 +123,10 @@
       position: relative;
       width: calc(20 * var(--size));
       height: calc(20 * var(--size));
-      /* 容器禁止动画 */
       transition: none;
     }
 
-    /* 雨滴层样式升级 - 动态雨滴核心 */
+    /* 雨滴层样式 */
     .rain-layer {
       position: absolute;
       inset: 0;
@@ -150,24 +142,17 @@
       height: calc(var(--size) * 3);
       background: linear-gradient(180deg, var(--rain-glow), var(--rain-a), var(--rain-b));
       border-radius: 0 0 2px 2px;
-      opacity: 0.8; /* 全程可见，不再是hover才显示 */
+      opacity: 0.8;
       image-rendering: pixelated;
-      /* 雨滴持续动画，无需hover触发 */
       animation: terraria-rain var(--dur, .55s) steps(3, end) infinite;
       animation-delay: var(--delay, 0s);
     }
 
-    /* 优化雨滴动画曲线 */
     @keyframes terraria-rain {
       0% { transform: translateY(-10px); opacity: 0; }
       10% { opacity: 1; }
       90% { opacity: 0.8; }
       100% { transform: translateY(110px); opacity: 0; }
-    }
-
-    @keyframes floaty {
-      from { transform: translateY(0) scale(1); }
-      to { transform: translateY(-5px) scale(1.04); }
     }
 
     /* 雷阵雨闪烁效果 */
@@ -188,6 +173,17 @@
     @keyframes snow-float {
       0% { transform: translateY(0px); background-color: var(--snow); }
       100% { transform: translateY(-2px); background-color: var(--snow-glow); }
+    }
+
+    /* 云朵动态变化动画 */
+    @keyframes cloud-shift {
+      0% { transform: translateX(0px); }
+      50% { transform: translateX(2px); }
+      100% { transform: translateX(-1px); }
+    }
+
+    .cloud-icon .pixel {
+      animation: cloud-shift 3s ease-in-out infinite alternate;
     }
 
     .temp {
@@ -223,7 +219,7 @@
 </head>
 <body>
   <h1>近七天天气像素画</h1>
-  <div class="sub">悬浮天气图标可见像素动态效果</div>
+  <div class="sub">鼠标滑动图标可见压动效果</div>
 
   <section class="board" id="board"></section>
 
@@ -237,27 +233,29 @@
       D: 'var(--cloud-low)',
       Y: 'var(--sun-core)',
       O: 'var(--sun-ring)',
-      Z: 'var(--sun-glow)', // 太阳光晕
+      Z: 'var(--sun-glow)',
       R: 'var(--rain-a)',
       B: 'var(--rain-b)',
       L: 'var(--storm)',
-      S: 'var(--storm-glow)', // 雷阵雨高光
+      S: 'var(--storm-glow)',
       W: 'var(--snow)',
-      X: 'var(--snow-glow)', // 雪花高光
+      X: 'var(--snow-glow)',
       M: 'var(--moon-a)',
       N: 'var(--moon-b)',
-      P: 'var(--moon-glow)'  // 月亮光晕
+      P: 'var(--moon-glow)'
     };
 
-    // 优化后的像素图案 - 更精致、细节更丰富
+    // 优化后的像素图案 - 圆形太阳 + 更自然的云朵
     const icons = {
+      // 圆形太阳像素画
       sunny: [
-        '000000000Z000000Z000','00000000ZZZZ000ZZZZ0','00000000OOOO00000000','0000000OYYYYO0000000',
-        '000000OYYYYYYO000000','00000OYYYYYYYYO00000','0000YYYYYYYYYY000000','0000OYYYYYYYYYYO0000',
-        '0000OYYYYYYYYYYO0000','0000YYYYYYYYYY000000','00000OYYYYYYYYO00000','000000OYYYYYYO000000',
-        '0000000OYYYYO0000000','00000000OOOO00000000','00000000ZZZZ000ZZZZ0','000000000Z000000Z000',
-        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
+        '00000000000000000000','00000000ZZZ000000000','0000000ZZZZZ00000000','000000OYYYYYO0000000',
+        '00000OYYYYYYYO000000','0000OYYYYYYYYYO00000','000OYYYYYYYYYYO00000','000OYYYYYYYYYYO00000',
+        '00OYYYYYYYYYYYYO0000','00OYYYYYYYYYYYYO0000','00OYYYYYYYYYYYYO0000','000OYYYYYYYYYYO00000',
+        '000OYYYYYYYYYYO00000','0000OYYYYYYYYYO00000','00000OYYYYYYYO000000','000000OYYYYYO0000000',
+        '0000000ZZZZZ00000000','00000000ZZZ000000000','00000000000000000000','00000000000000000000'
       ],
+      // 动态云朵（基础版）
       cloudy: [
         '00000000000000000000','00000000000000000000','000000000CC000000000','00000000CCCCC0000000',
         '0000000CCGGGCC000000','000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00',
@@ -302,6 +300,31 @@
       ]
     };
 
+    // 云朵变体 - 用于动态切换
+    const cloudVariants = [
+      [
+        '00000000000000000000','00000000000000000000','000000000CC000000000','00000000CCCCC0000000',
+        '0000000CCGGGCC000000','000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00',
+        '000CCGGGGGGGGGGGGCC0','000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000',
+        '000000CCGGGGGGCC0000','0000000CCGGGCC000000','00000000CCCCC0000000','000000000CCC00000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
+      ],
+      [
+        '00000000000000000000','00000000000000000000','00000000CCC000000000','0000000CCGGGC0000000',
+        '000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0',
+        '000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','000000CCGGGGGGCC0000',
+        '0000000CCGGGCC000000','00000000CCCCC0000000','000000000CCC00000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
+      ],
+      [
+        '00000000000000000000','00000000000000000000','000000000CC000000000','0000000CCGGGC0000000',
+        '000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0',
+        '000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','000000CCGGGGGGCC0000',
+        '0000000CCGGGC0000000','00000000CCCCC0000000','000000000CCC00000000','00000000000000000000',
+        '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
+      ]
+    ];
+
     const weather = [
       { day: '周一', icon: 'suncloud', temp: '13°C / 22°C', desc: '晴间多云' },
       { day: '周二', icon: 'cloudy', temp: '11°C / 19°C', desc: '多云' },
@@ -317,20 +340,18 @@
       return 'transparent';
     }
 
-    function drawPixelIcon(type) {
-      const lines = icons[type];
+    function drawPixelIcon(type, variantIndex = 0) {
+      const lines = type === 'cloudy' ? cloudVariants[variantIndex] : icons[type];
       const shell = document.createElement('div');
       shell.className = 'pixel-shell';
       const pixel = document.createElement('div');
       pixel.className = 'pixel';
       
-      // 绘制优化后的像素画
       for (let y = 0; y < 20; y++) {
         for (let x = 0; x < 20; x++) {
           const px = document.createElement('span');
           px.className = 'px';
           px.style.background = mapColor(lines[y][x]);
-          // 给关键像素点增加细微高光
           if (lines[y][x] === 'Y' || lines[y][x] === 'W' || lines[y][x] === 'L') {
             px.style.boxShadow = `0 0 1px ${mapColor(lines[y][x])}`;
           }
@@ -339,11 +360,9 @@
       }
       shell.appendChild(pixel);
 
-      // 雨滴动态效果升级 - 全程显示，无需hover
       if (type === 'rain') {
         const rainLayer = document.createElement('div');
         rainLayer.className = 'rain-layer';
-        // 增加更多雨滴，让效果更密集
         const drops = [
           { x: 8, delay: '.00s', dur: '.56s' },
           { x: 15, delay: '.05s', dur: '.50s' },
@@ -378,7 +397,7 @@
 
     const board = document.getElementById('board');
 
-    weather.forEach(item => {
+    weather.forEach((item, index) => {
       const card = document.createElement('article');
       card.className = 'day-card';
 
@@ -388,12 +407,41 @@
 
       const wrap = document.createElement('div');
       wrap.className = 'icon-wrap';
-      // 给对应天气添加特效类
       if (item.icon === 'rain') wrap.classList.add('rain-icon');
       if (item.icon === 'storm') wrap.classList.add('storm-icon');
       if (item.icon === 'snow') wrap.classList.add('snow-icon');
+      if (item.icon === 'cloudy') wrap.classList.add('cloud-icon');
       
-      wrap.appendChild(drawPixelIcon(item.icon));
+      // 云朵初始随机变体
+      const cloudVariant = item.icon === 'cloudy' ? Math.floor(Math.random() * 3) : 0;
+      const pixelIcon = drawPixelIcon(item.icon, cloudVariant);
+      wrap.appendChild(pixelIcon);
+
+      // 鼠标压动效果核心逻辑
+      wrap.addEventListener('mousemove', (e) => {
+        const rect = wrap.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        // 计算偏移角度（压动效果）
+        const rotateX = ((y - centerY) / centerY) * -8; // 上下压动
+        const rotateY = ((x - centerX) / centerX) * 8;  // 左右压动
+        const scale = 0.95 + Math.abs((x - centerX) / centerX) * 0.05; // 缩放压动
+        
+        // 应用变换到像素画
+        const pixel = wrap.querySelector('.pixel');
+        pixel.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
+        pixel.style.filter = `drop-shadow(0 4px 8px #58c6ff80)`;
+      });
+
+      // 鼠标离开恢复原状
+      wrap.addEventListener('mouseleave', () => {
+        const pixel = wrap.querySelector('.pixel');
+        pixel.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        pixel.style.filter = 'none';
+      });
 
       const temp = document.createElement('div');
       temp.className = 'temp';
@@ -406,6 +454,20 @@
       card.append(weekday, wrap, temp, desc);
       board.appendChild(card);
     });
+
+    // 云朵动态切换变体
+    setInterval(() => {
+      document.querySelectorAll('.cloud-icon').forEach(wrap => {
+        const currentPixel = wrap.querySelector('.pixel');
+        currentPixel.remove();
+        
+        // 随机切换云朵变体
+        const randomVariant = Math.floor(Math.random() * 3);
+        const newPixelShell = drawPixelIcon('cloudy', randomVariant);
+        const newPixel = newPixelShell.querySelector('.pixel');
+        wrap.querySelector('.pixel-shell').appendChild(newPixel);
+      });
+    }, 3000); // 每3秒切换一次云朵形态
   </script>
 </body>
 </html>
