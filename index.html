@@ -14,15 +14,20 @@
       --muted: #9bb0d9;
       --sun-core: #ffd857;
       --sun-ring: #ff9f43;
+      --sun-glow: #ffba08; /* 新增太阳光晕色 */
       --cloud-hi: #d7e3ff;
       --cloud-mid: #9db3db;
       --cloud-low: #7086b1;
       --rain-a: #7ed0ff;
       --rain-b: #4190ff;
+      --rain-glow: #a8d8ff; /* 新增雨滴高光 */
       --storm: #caa7ff;
+      --storm-glow: #e0c3ff; /* 新增雷阵雨高光 */
       --snow: #bff5ff;
+      --snow-glow: #e6fdff; /* 新增雪花高光 */
       --moon-a: #a4b7ff;
       --moon-b: #6f86f6;
+      --moon-glow: #c0cfff; /* 新增月亮光晕 */
     }
 
     * { box-sizing: border-box; }
@@ -68,12 +73,14 @@
       padding: 12px 8px 10px;
       text-align: center;
       box-shadow: 0 8px 20px #0000004f;
-      transition: transform .18s ease, box-shadow .18s ease;
+      /* 移除卡片的hover动画，避免背景动 */
+      transition: none;
     }
 
+    /* 移除卡片hover效果，只保留视觉反馈 */
     .day-card:hover {
-      transform: translateY(-4px);
       box-shadow: 0 14px 26px #00000066;
+      transform: none; /* 禁止卡片整体移动 */
     }
 
     .weekday {
@@ -89,6 +96,8 @@
       place-items: center;
       margin-bottom: 8px;
       cursor: pointer;
+      /* 容器禁止动画 */
+      transition: none;
     }
 
     .pixel {
@@ -100,26 +109,37 @@
       height: calc(20 * var(--size));
       image-rendering: pixelated;
       transform-origin: 50% 60%;
-      transition: filter .2s ease;
+      /* 仅像素画本身有hover动画 */
+      transition: filter .2s ease, transform .2s ease;
     }
 
-    .px { width: var(--size); height: var(--size); }
-
-    .pixel-shell {
-      position: relative;
-      width: calc(20 * var(--size));
-      height: calc(20 * var(--size));
-    }
-
+    /* 仅像素画hover时动，背景不动 */
     .icon-wrap:hover .pixel {
       animation: floaty .7s steps(2, end) infinite alternate;
       filter: drop-shadow(0 0 8px #58c6ff80);
     }
 
+    .px { 
+      width: var(--size); 
+      height: var(--size); 
+      /* 像素点增加过渡，更丝滑 */
+      transition: background-color 0.2s ease;
+    }
+
+    .pixel-shell {
+      position: relative;
+      width: calc(20 * var(--size));
+      height: calc(20 * var(--size));
+      /* 容器禁止动画 */
+      transition: none;
+    }
+
+    /* 雨滴层样式升级 - 动态雨滴核心 */
     .rain-layer {
       position: absolute;
       inset: 0;
       pointer-events: none;
+      overflow: hidden;
     }
 
     .rain-drop {
@@ -128,15 +148,21 @@
       left: calc(var(--x) * 1%);
       width: calc(var(--size) * 1);
       height: calc(var(--size) * 3);
-      background: linear-gradient(180deg, #c7ecff, #5da7ff);
-      opacity: 0;
+      background: linear-gradient(180deg, var(--rain-glow), var(--rain-a), var(--rain-b));
+      border-radius: 0 0 2px 2px;
+      opacity: 0.8; /* 全程可见，不再是hover才显示 */
       image-rendering: pixelated;
-    }
-
-    .rain-icon:hover .rain-drop {
-      opacity: 1;
+      /* 雨滴持续动画，无需hover触发 */
       animation: terraria-rain var(--dur, .55s) steps(3, end) infinite;
       animation-delay: var(--delay, 0s);
+    }
+
+    /* 优化雨滴动画曲线 */
+    @keyframes terraria-rain {
+      0% { transform: translateY(-10px); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(110px); opacity: 0; }
     }
 
     @keyframes floaty {
@@ -144,10 +170,24 @@
       to { transform: translateY(-5px) scale(1.04); }
     }
 
-    @keyframes terraria-rain {
-      0% { transform: translateY(-10px); opacity: 0; }
-      10% { opacity: 1; }
-      100% { transform: translateY(110px); opacity: .2; }
+    /* 雷阵雨闪烁效果 */
+    .storm-icon .pixel [style*="var(--storm)"] {
+      animation: storm-flash 1.2s infinite alternate;
+    }
+
+    @keyframes storm-flash {
+      0% { opacity: 0.7; background-color: var(--storm); }
+      100% { opacity: 1; background-color: var(--storm-glow); filter: drop-shadow(0 0 1px var(--storm-glow)); }
+    }
+
+    /* 雪花浮动效果 */
+    .snow-icon .pixel [style*="var(--snow)"] {
+      animation: snow-float 2s infinite alternate;
+    }
+
+    @keyframes snow-float {
+      0% { transform: translateY(0px); background-color: var(--snow); }
+      100% { transform: translateY(-2px); background-color: var(--snow-glow); }
     }
 
     .temp {
@@ -192,25 +232,30 @@
   <script>
     const C = {
       H: '#f4f8ff',
-      C: '#d7e3ff',
-      G: '#9db3db',
-      D: '#7086b1',
-      Y: '#ffd857',
-      O: '#ff9f43',
-      R: '#7ed0ff',
-      B: '#4190ff',
-      L: '#caa7ff',
-      W: '#bff5ff',
-      M: '#a4b7ff',
-      N: '#6f86f6'
+      C: 'var(--cloud-hi)',
+      G: 'var(--cloud-mid)',
+      D: 'var(--cloud-low)',
+      Y: 'var(--sun-core)',
+      O: 'var(--sun-ring)',
+      Z: 'var(--sun-glow)', // 太阳光晕
+      R: 'var(--rain-a)',
+      B: 'var(--rain-b)',
+      L: 'var(--storm)',
+      S: 'var(--storm-glow)', // 雷阵雨高光
+      W: 'var(--snow)',
+      X: 'var(--snow-glow)', // 雪花高光
+      M: 'var(--moon-a)',
+      N: 'var(--moon-b)',
+      P: 'var(--moon-glow)'  // 月亮光晕
     };
 
+    // 优化后的像素图案 - 更精致、细节更丰富
     const icons = {
       sunny: [
-        '00000000000000000000','00000000000000000000','000000000OOOO00000000','0000000OYYYYO0000000',
-        '000000OYYYYYYO000000','00000OYYYYYYYYO00000','00000YYYYYYYYYY000000','0000OYYYYYYYYYYO0000',
-        '0000OYYYYYYYYYYO0000','00000YYYYYYYYYY000000','00000OYYYYYYYYO00000','000000OYYYYYYO000000',
-        '0000000OYYYYO0000000','000000000OOOO00000000','00000000000000000000','00000000000000000000',
+        '000000000Z000000Z000','00000000ZZZZ000ZZZZ0','00000000OOOO00000000','0000000OYYYYO0000000',
+        '000000OYYYYYYO000000','00000OYYYYYYYYO00000','0000YYYYYYYYYY000000','0000OYYYYYYYYYYO0000',
+        '0000OYYYYYYYYYYO0000','0000YYYYYYYYYY000000','00000OYYYYYYYYO00000','000000OYYYYYYO000000',
+        '0000000OYYYYO0000000','00000000OOOO00000000','00000000ZZZZ000ZZZZ0','000000000Z000000Z000',
         '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
       ],
       cloudy: [
@@ -231,26 +276,26 @@
         '00000000000000000000','000000000CC000000000','00000000CCCCC0000000','0000000CCGGGCC000000',
         '000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0',
         '000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','000000CCGGGGGGCC0000',
-        '000000000L0000000000','00000000LL0000000000','0000000LL00000000000','00000000LLL000000000',
-        '000000000LL000000000','00000000LL0000000000','00000000000000000000','00000000000000000000'
+        '000000000L0000000000','00000000SL0000000000','0000000LS00000000000','00000000SSL000000000',
+        '000000000SL000000000','00000000LS0000000000','00000000000000000000','00000000000000000000'
       ],
       snow: [
         '00000000000000000000','000000000CC000000000','00000000CCCCC0000000','0000000CCGGGCC000000',
         '000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0',
         '000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','000000CCGGGGGGCC0000',
-        '000000W00W00W0000000','0000000WWW0000000000','000000W00W00W0000000','0000000WWW0000000000',
+        '000000W00W00W0000000','0000000XWX0000000000','000000W00W00W0000000','0000000WWW0000000000',
         '000000W00W00W0000000','0000000W00000W000000','00000000000000000000','00000000000000000000'
       ],
       night: [
         '00000000000000000000','0000000000MN00000000','000000000MNNN0000000','00000000MNNNN0000000',
-        '0000000MNNNNN0000000','0000000MNNNN00000000','0000000MNNN000000000','0000000MNN0000000000',
+        '0000000MNNNNN0000000','0000000MNNNNP0000000','0000000MNNNP00000000','0000000MNN0000000000',
         '000000000CC000000000','00000000CCCCC0000000','0000000CCGGGCC000000','000000CCGGGGGGCC0000',
         '00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0','000CCGGGGGGGGGGGGCC0',
         '0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','00000000CCCCC0000000','00000000000000000000'
       ],
       suncloud: [
-        '000000000OOOO00000000','0000000OYYYYYO0000000','000000OYYYYYYO000000','0000000OYYYYYO0000000',
-        '000000000OOOO00000000','000000000CC000000000','00000000CCCCC0000000','0000000CCGGGCC000000',
+        '00000000OOOO00000000','000000OYYYYYO0000000','000000OYYYYYYO000000','000000OYYYYYO0000000',
+        '00000000OOOO00000000','000000000CC000000000','00000000CCCCC0000000','0000000CCGGGCC000000',
         '000000CCGGGGGGCC0000','00000CCGGGGGGGGCC000','0000CCGGGGGGGGGGCC00','000CCGGGGGGGGGGGGCC0',
         '000CCGGGGGGGGGGGGCC0','0000CCGGGGGGGGGGCC00','00000CCGGGGGGGGCC000','00000000CCCCC0000000',
         '00000000000000000000','00000000000000000000','00000000000000000000','00000000000000000000'
@@ -278,29 +323,45 @@
       shell.className = 'pixel-shell';
       const pixel = document.createElement('div');
       pixel.className = 'pixel';
+      
+      // 绘制优化后的像素画
       for (let y = 0; y < 20; y++) {
         for (let x = 0; x < 20; x++) {
           const px = document.createElement('span');
           px.className = 'px';
           px.style.background = mapColor(lines[y][x]);
+          // 给关键像素点增加细微高光
+          if (lines[y][x] === 'Y' || lines[y][x] === 'W' || lines[y][x] === 'L') {
+            px.style.boxShadow = `0 0 1px ${mapColor(lines[y][x])}`;
+          }
           pixel.appendChild(px);
         }
       }
       shell.appendChild(pixel);
 
+      // 雨滴动态效果升级 - 全程显示，无需hover
       if (type === 'rain') {
         const rainLayer = document.createElement('div');
         rainLayer.className = 'rain-layer';
+        // 增加更多雨滴，让效果更密集
         const drops = [
           { x: 8, delay: '.00s', dur: '.56s' },
+          { x: 15, delay: '.05s', dur: '.50s' },
           { x: 20, delay: '.11s', dur: '.52s' },
+          { x: 28, delay: '.17s', dur: '.58s' },
           { x: 31, delay: '.23s', dur: '.60s' },
+          { x: 40, delay: '.08s', dur: '.47s' },
           { x: 42, delay: '.05s', dur: '.49s' },
+          { x: 50, delay: '.25s', dur: '.55s' },
           { x: 55, delay: '.18s', dur: '.58s' },
+          { x: 62, delay: '.12s', dur: '.61s' },
           { x: 67, delay: '.08s', dur: '.54s' },
+          { x: 75, delay: '.28s', dur: '.59s' },
           { x: 79, delay: '.20s', dur: '.62s' },
+          { x: 85, delay: '.10s', dur: '.53s' },
           { x: 89, delay: '.15s', dur: '.50s' }
         ];
+        
         drops.forEach(d => {
           const drop = document.createElement('span');
           drop.className = 'rain-drop';
@@ -327,7 +388,11 @@
 
       const wrap = document.createElement('div');
       wrap.className = 'icon-wrap';
+      // 给对应天气添加特效类
       if (item.icon === 'rain') wrap.classList.add('rain-icon');
+      if (item.icon === 'storm') wrap.classList.add('storm-icon');
+      if (item.icon === 'snow') wrap.classList.add('snow-icon');
+      
       wrap.appendChild(drawPixelIcon(item.icon));
 
       const temp = document.createElement('div');
